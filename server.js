@@ -1,4 +1,3 @@
-
 const express = require('express')
 const app = require('express')();
 const URL = require('url');
@@ -28,28 +27,60 @@ app.post('/join',(req,res)=>{
     const room = req.body.room;
     res.redirect(`/${room}`)
 })
-// let n_members = 0
-// let members = []
+// let people = []
+// let uid = ""
+let members = []
+// dict.people = people
+// dict.uid = uid 
+
 io.on('connection', socket => {
-    socket.on('join-room', (roomId, userId, name,members) => {
-        // n_members += 1;
-        members.push(name);
-        console.log(members)
-        io.emit('new-user-connected',members, name)
-        // socket.emit('joined-room',name);
-        socket.join(roomId)
+
+    socket.on('join-room', (roomId, userId, name) => {
+        socket.join(roomId);
+        members.push({name:name,room:roomId,userId:userId});
+        console.log(members);
+        room_members_list = []
+        userId_list = []
+        for (let i = 0; i < members.length; i++) {if(members[i].room == roomId){room_members_list.push(members[i].name)}}
+        for (let i = 0; i < members.length; i++) {if(members[i].room == roomId){userId_list.push(members[i].userId)}}
+        console.log(room_members_list);
+
+        io.to(roomId).emit('new-user-connected',room_members_list, name,userId_list);  
         socket.to(roomId).broadcast.emit('user-connected', userId)
   
+    socket.on('disconnect_user',(roomId)=>{
+        console.log('yoyi')
+        for (let i = 0; i < members.length; i++) {if(members[i].roomId = roomId){room_members_list.pop(members[i])}}
+
+    })
+
+    
     socket.on('disconnect', () => {
-        socket.to(roomId).broadcast.emit('user-disconnected', userId)
-        // n_members -= 1
+        console.log("user "+userId+ "from room "+roomId+" disconnected");
+        for (let i = 0; i< members.length;i++){
+            if(members[i].userId==userId){
+                members.splice(i);
+                console.log(members)
+                break
+            }
+        }
+        console.log(members[0])
+        for (let i = 0; i< room_members_list.length;i++){
+            if(room_members_list[i]==name){
+                room_members_list.splice(i);
+                break
+            }
+        }
+        socket.to(roomId).broadcast.emit('user-disconnected', userId,room_members_list.length);
+        
       });
-    socket.on('chat message', (msg) => {
+    socket.on('chat message', (msg,roomId) => {
         console.log('message: ' + msg);
-        io.emit('chat message', msg);
+        io.to(roomId).emit('chat message', msg);
     
       });
     })
+   
   })
 
   server.listen(3000)

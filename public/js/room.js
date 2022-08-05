@@ -1,9 +1,10 @@
 // import { io } from 'socket.io-client'
 var socket = io('/');
 
-socket.on('new-user-connected',(members, name)=>{
+socket.on('new-user-connected',(members, name,userIdList)=>{
+
+  console.log(members)
   let n_members = members.length;
-  console.log('Hello')
 
   // imcreasing member count
   const members_count = document.getElementById('members__count')
@@ -14,6 +15,7 @@ socket.on('new-user-connected',(members, name)=>{
   // creating message wrapper and adding message_wrapper class
   const message__wrapper = document.createElement('div');
   message__wrapper.classList.add('message__wrapper');
+  
 
   // creating message__body__bot and adding message__body__bot class
   const message__body__bot = document.createElement('div');
@@ -53,7 +55,10 @@ socket.on('new-user-connected',(members, name)=>{
   // For members
   // 
   console.log('Hello member')
-
+  const boxes = document.querySelectorAll('.member__wrapper');
+  boxes.forEach(box => {
+    box.remove();
+  });
 
   console.log(n_members)
   // setting member__list as a variable
@@ -62,34 +67,35 @@ socket.on('new-user-connected',(members, name)=>{
   // creating member wrapper and adding member_wrapper class and member_1_wrapper id
   for (let i=0; i< n_members;i++){
 
-  
-  const member__wrapper = document.createElement('div');
-  member__wrapper.classList.add('member__wrapper');
-  member__wrapper.setAttribute('id','member__1__wrapper')
+          const member__wrapper = document.createElement('div');
+          member__wrapper.classList.add(userIdList[i]);
+          member__wrapper.classList.add('member__wrapper');
+          member__wrapper.setAttribute('id','member__1__wrapper')
 
-  // creating green__icon and adding green__icon class
-  const green__icon = document.createElement('span');
-  green__icon.classList.add('green__icon');
+        // creating green__icon and adding green__icon class
+          const green__icon = document.createElement('span');
+          green__icon.classList.add('green__icon');
 
-  //creating member_name, adding member_name class and appending member to it
-  
-  const member_name = document.createElement('p');
-  member_name.classList.add('member_name');
-  let member = 'Unknown';
-  if(name){
-      console.log(1)
-       member = document.createTextNode(name);}
-  else{
-    console.log(2)
-      member = document.createTextNode('Unknown')}
-      member_name.appendChild(member)
- 
-  // appending green__icon and member_name to message_body
-    member__wrapper.appendChild(green__icon)
-    member__wrapper.appendChild(member_name)
+          //creating member_name, adding member_name class and appending member to it
+          
+          const member_name = document.createElement('p');
+          member_name.classList.add('member_name');
+          let member = 'Unknown';
+          if(members[i]){
+              console.log(1)
+              member = document.createTextNode(members[i]);}
+          else{
+            console.log(2)
+              member = document.createTextNode('Unknown')}
+              member_name.appendChild(member)
+        
+          // appending green__icon and member_name to message_body
+            member__wrapper.appendChild(green__icon)
+            member__wrapper.appendChild(member_name)
 
-  // appending member__list in member__wrapper
-  member__list.appendChild(member__wrapper)}
+          // appending member__list in member__wrapper
+          member__list.appendChild(member__wrapper)
+}
 
 })
 
@@ -161,7 +167,7 @@ chatForm.addEventListener('submit',(e)=>{
     e.preventDefault();
   if(chatInput.value)
   // { console.log(e.value)
-    {socket.emit('chat message', [sessionStorage.name,chatInput.value]);
+    {socket.emit('chat message', [sessionStorage.name,chatInput.value],ROOM_ID);
     chatInput.value = '';
   };
 });
@@ -231,7 +237,7 @@ chatButton.addEventListener('click', () => {
 const myPeer = new Peer()
 console.log(myPeer)
 const myVideo = document.createElement('video')
-myVideo.classList.add('main__Video')
+// myVideo.classList.add('main__Video')
 myVideo.muted = true
 const peers = {}
 
@@ -257,19 +263,35 @@ function connectToNewUser(userId, stream) {
   peers[userId] = call
 }
 
-socket.on('user-disconnected', userId => {
+// stack overflow
+function removeElementsByClass(className){
+  const elements = document.getElementsByClassName(className);
+  while(elements.length > 0){
+    console.log('hi ')
+      elements[0].parentNode.removeChild(elements[0]);
+  }
+}
+
+
+socket.on('user-disconnected', (userId,n) => {
+  console.log(userId)
+  removeElementsByClass(userId)
+  document.getElementById('members__count').textContent = n
   if (peers[userId]) peers[userId].close()
+    
 })
+
 
 let member_list = []
 myPeer.on('open', id => {
-  socket.emit('join-room', ROOM_ID, id,sessionStorage.name,member_list)
+  socket.emit('join-room', ROOM_ID, id,sessionStorage.name)
 })
 
 
 function exitMeeting(){
   // console.log("I got clicked")
-  userStream.getTracks().forEach(function(track) { track.stop(); })
+  userStream.getTracks().forEach(function(track) { track.stop(); });
+  io.emit('disconnect_user',ROOM_ID)
   window.location.href = "disconnect.html";
   
 }
