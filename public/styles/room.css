@@ -68,6 +68,14 @@
   background-color: #2aca3e;
 }
 
+.red__icon {
+  display: block;
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  background-color: #ca2a2a;
+}
+
 .member_name{
   font-size: 14px;
   line-height: 0;

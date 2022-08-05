@@ -1,10 +1,10 @@
 // import { io } from 'socket.io-client'
 var socket = io('/');
 
-socket.on('new-user-connected',(members, name,userIdList)=>{
+socket.on('new-user-connected',(members, name,userIdList,disconnected_members_list)=>{
 
   console.log(members)
-  let n_members = members.length;
+  let n_members = members.length - disconnected_members_list.length;
 
   // imcreasing member count
   const members_count = document.getElementById('members__count')
@@ -60,12 +60,12 @@ socket.on('new-user-connected',(members, name,userIdList)=>{
     box.remove();
   });
 
-  console.log(n_members)
+  // console.log(n_members)
   // setting member__list as a variable
   const member__list = document.getElementById("member__list")
 
   // creating member wrapper and adding member_wrapper class and member_1_wrapper id
-  for (let i=0; i< n_members;i++){
+  for (let i=0; i< members.length; i++){
 
           const member__wrapper = document.createElement('div');
           member__wrapper.classList.add(userIdList[i]);
@@ -96,6 +96,14 @@ socket.on('new-user-connected',(members, name,userIdList)=>{
           // appending member__list in member__wrapper
           member__list.appendChild(member__wrapper)
 }
+for (let i=0; i< disconnected_members_list.length;i++){
+  let disconnect_users_join = document.getElementsByClassName(disconnected_members_list[i]);
+
+  let b = disconnect_users_join[0].getElementsByClassName('green__icon')
+  b[0].classList.add('red__icon')
+  b[0].classList.remove('green__icon')
+}
+
 
 })
 
@@ -237,7 +245,7 @@ chatButton.addEventListener('click', () => {
 const myPeer = new Peer()
 console.log(myPeer)
 const myVideo = document.createElement('video')
-// myVideo.classList.add('main__Video')
+myVideo.classList.add()
 myVideo.muted = true
 const peers = {}
 
@@ -252,8 +260,9 @@ function addVideoStream(video, stream) {
 function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
-  // video.classList.add('main__Video')
+
   call.on('stream', userVideoStream => {
+    // video.classList.add('main__Video')
     addVideoStream(video, userVideoStream)
   })
   call.on('close', () => {
@@ -273,16 +282,21 @@ function removeElementsByClass(className){
 }
 
 
-socket.on('user-disconnected', (userId,n) => {
-  console.log(userId)
-  removeElementsByClass(userId)
-  document.getElementById('members__count').textContent = n
+socket.on('user-disconnected', (userId) => {
+  console.log("user disconnected: "+userId)
+  let disconnect_users_here = document.getElementsByClassName(userId);
+
+  let a = disconnect_users_here[0].getElementsByClassName('green__icon')
+  a[0].classList.add('red__icon')
+  a[0].classList.remove('green__icon')
+  
+  document.getElementById('members__count').textContent = parseInt(document.getElementById('members__count').textContent)-1
   if (peers[userId]) peers[userId].close()
     
 })
 
 
-let member_list = []
+// let member_list = []
 myPeer.on('open', id => {
   socket.emit('join-room', ROOM_ID, id,sessionStorage.name)
 })
@@ -307,6 +321,7 @@ async function init(){
     myPeer.on('call', call => {
     call.answer(stream)
     const video = document.createElement('video')
+    video
     call.on('stream', userVideoStream => {
         addVideoStream(video, userVideoStream)
         })
