@@ -1,8 +1,11 @@
 // import { io } from 'socket.io-client'
 var socket = io('/');
 
+
+
 socket.on('new-user-connected',(members, name,userIdList,disconnected_members_list)=>{
 
+  closeUnclosedStreams()
   console.log(members)
   let n_members = members.length - disconnected_members_list.length;
 
@@ -32,10 +35,10 @@ socket.on('new-user-connected',(members, name,userIdList,disconnected_members_li
   message__text.classList.add('message__text__bot');
   let text = 'Hi there';
   if(name){
-      console.log(1)
+      // console.log(1)
        text = document.createTextNode(name+' 👋');}
   else{
-    console.log(2)
+    // console.log(2)
       text = document.createTextNode('Someone just entered the room!')}
 
   message__text.appendChild(text)
@@ -54,7 +57,6 @@ socket.on('new-user-connected',(members, name,userIdList,disconnected_members_li
   // 
   // For members
   // 
-  console.log('Hello member')
   const boxes = document.querySelectorAll('.member__wrapper');
   boxes.forEach(box => {
     box.remove();
@@ -82,10 +84,10 @@ socket.on('new-user-connected',(members, name,userIdList,disconnected_members_li
           member_name.classList.add('member_name');
           let member = 'Unknown';
           if(members[i]){
-              console.log(1)
+              // console.log(1)
               member = document.createTextNode(members[i]);}
           else{
-            console.log(2)
+            // console.log(2)
               member = document.createTextNode('Unknown')}
               member_name.appendChild(member)
         
@@ -138,7 +140,7 @@ const exitButton = document.getElementById('exitButton')
 exitButton.addEventListener("click",exitMeeting)
 
 function toggleVideo(){
-  console.log("I got clicked")
+  // console.log("I got clicked")
   const videoTrack = userStream.getTracks().find(track => track.kind === 'video');
   if (videoTrack.enabled) {
     videoTrack.enabled = false;
@@ -153,7 +155,7 @@ function toggleVideo(){
 
 // toggle audio
 function toggleAudio(){
-  console.log("I got clicked")
+  // console.log("I got clicked")
   const audioTrack = userStream.getTracks().find(track => track.kind === 'audio');
   if (audioTrack.enabled) {
     audioTrack.enabled = false;
@@ -165,7 +167,7 @@ function toggleAudio(){
 }}
 
 function exitMeeting(){
-  console.log("I got clicked")
+  // console.log("I got clicked")
   userStream.getTracks().forEach(function(track) { track.stop(); })
   // window.location.href = "disconnect.html";
   
@@ -180,7 +182,7 @@ chatForm.addEventListener('submit',(e)=>{
   };
 });
 socket.on('chat message',(msg)=>{
-  console.log(msg)
+  // console.log(msg)
   const messages = document.getElementById("messages")
   // creating message wrapper and adding message_wrapper class
   const message__wrapper = document.createElement('div');
@@ -243,12 +245,12 @@ chatButton.addEventListener('click', () => {
 // webRTC
 // const socket = io('http://localhost:3000')
 const myPeer = new Peer()
-console.log(myPeer)
+// console.log(myPeer)
 const myVideo = document.createElement('video')
 myVideo.classList.add()
 myVideo.muted = true
 const peers = {}
-
+// console.log(peers)
 
 function addVideoStream(video, stream) {
   video.srcObject = stream
@@ -260,12 +262,15 @@ function addVideoStream(video, stream) {
 function connectToNewUser(userId, stream) {
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
-
+  // console.log('connected to new user')
   call.on('stream', userVideoStream => {
-    // video.classList.add('main__Video')
+
     addVideoStream(video, userVideoStream)
   })
+
+
   call.on('close', () => {
+
     video.remove()
   })
 
@@ -276,23 +281,65 @@ function connectToNewUser(userId, stream) {
 function removeElementsByClass(className){
   const elements = document.getElementsByClassName(className);
   while(elements.length > 0){
-    console.log('hi ')
+    // console.log('hi ')
       elements[0].parentNode.removeChild(elements[0]);
   }
 }
 
+function closeUnclosedStreams(){
+  let videoContainer = document.querySelector('#video-grid');
+  let videos = videoContainer.childNodes
+  for(let i = 0;i< videos.length; i++){
+    console.log(videos[i].srcObject.active)
+    if(!videos[i].srcObject.active){
+      console.log(videos[i].srcObject.active)
+      videos[i].remove()
+    }
+  }
+}
 
-socket.on('user-disconnected', (userId) => {
+
+socket.on('user-disconnected', (userId,name) => {
+  // closeUnclosedStreams()
   console.log("user disconnected: "+userId)
+  removeElementsByClass(userId)
   let disconnect_users_here = document.getElementsByClassName(userId);
+  const messages = document.getElementById("messages")
+  // creating message wrapper and adding message_wrapper class
+  const message__wrapper = document.createElement('div');
+  message__wrapper.classList.add('message__wrapper');
 
-  let a = disconnect_users_here[0].getElementsByClassName('green__icon')
-  a[0].classList.add('red__icon')
-  a[0].classList.remove('green__icon')
-  
+  // creating message__body__bot and adding message__body__bot class
+  const message__body__bot = document.createElement('div');
+  message__body__bot.classList.add('message__body__bot');
+
+  // creating message author, adding message_author class and appending  bot name to it
+  const message__author = document.createElement('strong');
+  message__author.classList.add('message__author__bot');
+  const writer = document.createTextNode('🤖 Mumble Bot')
+  message__author.appendChild(writer)
+
+  //creating message text, adding message_text class and appending message to it
+  const message__text = document.createElement('p');
+  message__text.classList.add('message__text__bot');
+  let text = document.createTextNode(name+' left the meeting')
+
+  message__text.appendChild(text)
+ 
+  // appending message _author and message_text to message__body__bot
+    message__body__bot.appendChild(message__author)
+    message__body__bot.appendChild(message__text)
+
+  // appending message_body in message wrapper
+  message__wrapper.appendChild(message__body__bot)
+
+  // appending message_wrapper in messages
+  messages.appendChild(message__wrapper)
+
   document.getElementById('members__count').textContent = parseInt(document.getElementById('members__count').textContent)-1
   if (peers[userId]) peers[userId].close()
-    
+  // closeUnclosedStreams
+   setTimeout(closeUnclosedStreams, 15000);
 })
 
 
@@ -300,7 +347,6 @@ socket.on('user-disconnected', (userId) => {
 myPeer.on('open', id => {
   socket.emit('join-room', ROOM_ID, id,sessionStorage.name)
 })
-
 
 function exitMeeting(){
   // console.log("I got clicked")
@@ -321,7 +367,6 @@ async function init(){
     myPeer.on('call', call => {
     call.answer(stream)
     const video = document.createElement('video')
-    video
     call.on('stream', userVideoStream => {
         addVideoStream(video, userVideoStream)
         })
