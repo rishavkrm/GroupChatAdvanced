@@ -75,19 +75,25 @@ io.on('connection', socket => {
         // for (let i = 0; i < disconnected_members.length; i++) {if(disconnected_members[i].room == roomId){disconnected_members_list.push(members[i].userId)}}
         for (let i = 0; i< members.length;i++){
             if(members[i].userId==userId){
-                members.splice(i);
+                console.log("members:",members)
+                members.splice(i,1);
                 console.log("members:",members)
                 break
             }
         }
         for (let i = 0; i< room_members_list.length;i++){
             if(userId_list[i]==userId){
-                userId_list.splice(i);
-                room_members_list.splice(i);
+                userId_list.splice(i,1);
+                room_members_list.splice(i,1);
                 console.log("room_members",room_members_list)
                 break
             }
         }
+        // room_members_list = []
+        // userId_list = []
+        // for (let i = 0; i < members.length; i++) {if(members[i].room == roomId){room_members_list.push(members[i].name)}}
+        // for (let i = 0; i < members.length; i++) {if(members[i].room == roomId){userId_list.push(members[i].userId)}}
+        // console.log("useridlist: ",userId_list)
         socket.to(roomId).emit('user-disconnected', userId, name);
         
       });

@@ -302,6 +302,7 @@ function closeUnclosedStreams(){
 socket.on('user-disconnected', (userId,name) => {
   // closeUnclosedStreams()
   console.log("user disconnected: "+userId)
+  console.log("user-disconnected"+userId)
   removeElementsByClass(userId)
   let disconnect_users_here = document.getElementsByClassName(userId);
   const messages = document.getElementById("messages")
@@ -339,7 +340,7 @@ socket.on('user-disconnected', (userId,name) => {
   document.getElementById('members__count').textContent = parseInt(document.getElementById('members__count').textContent)-1
   if (peers[userId]) peers[userId].close()
   // closeUnclosedStreams
-   setTimeout(closeUnclosedStreams, 15000);
+   setTimeout(closeUnclosedStreams, 8000);
 })
 
 
