@@ -27,7 +27,7 @@ socket.on('new-user-connected',(members, name,userIdList,disconnected_members_li
   // creating message author, adding message_author class and appending  bot name to it
   const message__author = document.createElement('strong');
   message__author.classList.add('message__author__bot');
-  const writer = document.createTextNode('🤖 Mumble Bot')
+  const writer = document.createTextNode('🧞‍♂️SeeYa Bot')
   message__author.appendChild(writer)
 
   //creating message text, adding message_text class and appending message to it
@@ -317,7 +317,7 @@ socket.on('user-disconnected', (userId,name) => {
   // creating message author, adding message_author class and appending  bot name to it
   const message__author = document.createElement('strong');
   message__author.classList.add('message__author__bot');
-  const writer = document.createTextNode('🤖 Mumble Bot')
+  const writer = document.createTextNode('🧞‍♂️SeeYa Bot')
   message__author.appendChild(writer)
 
   //creating message text, adding message_text class and appending message to it
