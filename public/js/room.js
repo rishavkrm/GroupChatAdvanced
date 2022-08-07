@@ -166,13 +166,6 @@ function toggleAudio(){
     toggleAudioButton.classList.remove('active')
 }}
 
-function exitMeeting(){
-  // console.log("I got clicked")
-  userStream.getTracks().forEach(function(track) { track.stop(); })
-  // window.location.href = "disconnect.html";
-  
-}
-
 chatForm.addEventListener('submit',(e)=>{
     e.preventDefault();
   if(chatInput.value)
@@ -352,8 +345,8 @@ myPeer.on('open', id => {
 function exitMeeting(){
   // console.log("I got clicked")
   userStream.getTracks().forEach(function(track) { track.stop(); });
-  io.emit('disconnect_user',ROOM_ID)
-  window.location.href = "disconnect.html";
+  userStream.getTracks().forEach(function(track) { track.stop(); })
+  window.location.href = "/";
   
 }
 
